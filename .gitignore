@@ -3,3 +3,4 @@ dataset
 .*\.png
 archive.zip
 /model_weights/*
+/.kaggle/kaggle.json
