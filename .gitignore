@@ -1,6 +1,8 @@
 /.venv
-dataset
+/dataset/*dataset.npy
+/dataset/*h5
+/dataset/*jpg
+/dataset/ab/
+/dataset/l/
 .*\.png
 archive.zip
-/model_weights/*
-/.kaggle/kaggle.json
