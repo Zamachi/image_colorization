@@ -1,3 +1,4 @@
+import pretty_errors
 from model import CICAFFModel 
 from imports import np, torch
 from helper_functions import load_data
@@ -26,6 +27,9 @@ encoder4_output = model.en4(encoder3_output)
 encoder5_output = model.en5(encoder4_output)
 encoder6_output = model.en6(encoder5_output)
 classification_subnet_output = model.classification_subnet(encoder6_output)
+aff1_output = model.aff1(encoder1_output,encoder2_output,encoder3_output,encoder4_output,encoder5_output)
+aff2_output = model.aff2(encoder1_output,encoder2_output,encoder3_output,encoder4_output,encoder5_output)
+aff3_output = model.aff3(encoder1_output,encoder2_output,encoder3_output,encoder4_output,encoder5_output)
 # NOTE : printovanje
 print("encoder1_output has output of shape:\t" , encoder1_output.shape)
 print("encoder2_output has output of shape:\t" , encoder2_output.shape)
@@ -35,6 +39,9 @@ print("encoder5_output has output of shape:\t" , encoder5_output.shape)
 print("encoder6_output has output of shape:\t" , encoder6_output.shape)
 print("classification_subnet_output has output of shape:\t" , classification_subnet_output.shape)
 print("classification_subnet_output sums:\t",classification_subnet_output.sum(dim=1))
+print("aff1_output has output of shape:\t" , aff1_output.shape)
+print("aff2_output has output of shape:\t" , aff2_output.shape)
+print("aff3_output has output of shape:\t" , aff3_output.shape)
 #NOTE: Outputi modela
 # assert model_output.shape[1] == num_classes, f"Ocekivana dubina na izlazu {num_classes}, dobijena: {model_output.shape[1]}"
 # random_classes = np.random.randint(0,num_classes,15)

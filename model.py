@@ -87,16 +87,22 @@ class CICAFFModel(torch.nn.Module):
 
         self.classification_subnet = ClassificationSubnetwork()
 
+        self.aff1 = AFFModule(1/4,decoder_depth=1024, original_image_size=224)
+        self.aff2 = AFFModule(1/8, decoder_depth=512, original_image_size=224)
+        self.aff3 = AFFModule(1/16, decoder_depth=256, original_image_size=224)
 
     def forward(self, x):
         #NOTE reassignment vrv ne treba zbog ReLU(True)? proveriti...
-        self.en1(x) 
-        self.en2(x)
-        self.en3(x)
-        self.en4(x)
-        self.en5(x)
+        en1_out = self.en1(x) 
+        en2_out = self.en2(x)
+        en3_out = self.en3(x)
+        en4_out = self.en4(x)
+        en5_out = self.en5(x)
+        aff1_out = self.aff1(en1_out, en2_out, en3_out, en4_out, en5_out) # NOTE: je l ovde treba dodati aktivacionu f-ju
+        aff2_out = self.aff2(en1_out, en2_out, en3_out, en4_out, en5_out)# NOTE: je l ovde treba dodati aktivacionu f-ju
+        aff3_out = self.aff3(en1_out, en2_out, en3_out, en4_out, en5_out)# NOTE: je l ovde treba dodati aktivacionu f-ju
         x_g = self.en6(x)
-        image_probability = self.classification_subnet(x)
+        image_category_probability = self.classification_subnet(x)
         return x
     
 class ResidualBlock(torch.nn.Module):
@@ -124,8 +130,19 @@ class ClassificationSubnetwork(torch.nn.Module):
         return self.conv_module(x)
 
 class AFFModule(torch.nn.Module):
-    def __init__(AFFModule,self):
-        super(self).__init__()
-
-    def forward(self, x):
-        return x
+    def __init__(self, desired_multiplier: int, decoder_depth: int, concatenated_size:int=1984, original_image_size:int=224, device='gpu'):
+        super(AFFModule,self).__init__()
+        self.original_size = original_image_size
+        self.desired_multiplier = desired_multiplier
+        self.device = device
+        self.convolute_concatenated = torch.nn.Sequential(
+            torch.nn.Conv2d(concatenated_size, decoder_depth, kernel_size=1),
+            torch.nn.ReLU(True),
+            torch.nn.Conv2d(decoder_depth, decoder_depth, kernel_size=3, padding=1, stride=1),
+            torch.nn.ReLU(True), # WARNING should I remove it?, related to 101,102,103 lines...
+        )
+    def forward(self, *encoder_layers):
+        return self.convolute_concatenated(torch.cat([self.transform(layer) for layer in encoder_layers],dim=1))
+    
+    def transform(self,  x:torch.Tensor):
+        return x if self.original_size * self.desired_multiplier == x.shape[2] else torch.nn.functional.interpolate(x, size=tuple([int(self.original_size*self.desired_multiplier)]*2))
