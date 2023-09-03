@@ -7,7 +7,9 @@ class ReweightedCrossEntropy(torch.nn.Module):
         self.Q_value = Q_value
         self.class_weights_probs = class_weights_probs
         self.device =device
+        #TODO: mozda nije potrebno smoothovati distribuciju, proveri naucni rad opet...
         self.smoothed_distribution = gaussian_filter1d(self.class_weights_probs, sigma=self.sigma_value)
+        #TODO: mislim da ovo ne treba da bude w_value, nego nesto drugo ? [ref](https://github.com/richzhang/colorization/issues/23#issuecomment-368331329)
         self.w_value = ( (1-self.lambda_value) * self.smoothed_distribution + (self.lambda_value/self.Q_value) ) ** -1
 
     def forward(self, model_predictions: torch.Tensor, ground_truth: torch.Tensor):
