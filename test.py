@@ -12,15 +12,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model = CICAFFModel(number_of_classes=num_classes).to(device)
 data_memmap = load_data('r')
-data_sample = torch.as_tensor(data_memmap[np.random.randint(0,len(data_memmap))].copy(),dtype=torch.float, device=device)
+data_sample = torch.as_tensor(data_memmap[0:16].copy(),dtype=torch.float, device=device)
 
-X, Y = data_sample[0:1], data_sample[1:]
-
-print(X.shape)
+X, Y = data_sample[:,0:1], data_sample[:,1:]
 
 # model_outputs = model(X)
 # NOTE: outputi
-encoder1_output = model.en1(X.reshape(1,1,224,224))
+encoder1_output = model.en1(X.reshape(-1,1,224,224))
 encoder2_output = model.en2(encoder1_output)
 encoder3_output = model.en3(encoder2_output)
 encoder4_output = model.en4(encoder3_output)
@@ -30,6 +28,10 @@ classification_subnet_output = model.classification_subnet(encoder6_output)
 aff1_output = model.aff1(encoder1_output,encoder2_output,encoder3_output,encoder4_output,encoder5_output)
 aff2_output = model.aff2(encoder1_output,encoder2_output,encoder3_output,encoder4_output,encoder5_output)
 aff3_output = model.aff3(encoder1_output,encoder2_output,encoder3_output,encoder4_output,encoder5_output)
+decoder3_output = model.decode3(aff3_output,encoder6_output)
+decoder2_output = model.decode2(aff2_output,decoder3_output)
+decoder1_output = model.decode1(aff1_output,decoder2_output)
+output = model.output(decoder1_output)
 # NOTE : printovanje
 print("encoder1_output has output of shape:\t" , encoder1_output.shape)
 print("encoder2_output has output of shape:\t" , encoder2_output.shape)
@@ -42,6 +44,10 @@ print("classification_subnet_output sums:\t",classification_subnet_output.sum(di
 print("aff1_output has output of shape:\t" , aff1_output.shape)
 print("aff2_output has output of shape:\t" , aff2_output.shape)
 print("aff3_output has output of shape:\t" , aff3_output.shape)
+print("decoder3_output has output of shape:\t" , decoder3_output.shape)
+print("decoder2_output has output of shape:\t" , decoder2_output.shape)
+print("decoder1_output has output of shape:\t" , decoder1_output.shape)
+print("output has output of shape:\t" , output.shape)
 #NOTE: Outputi modela
 # assert model_output.shape[1] == num_classes, f"Ocekivana dubina na izlazu {num_classes}, dobijena: {model_output.shape[1]}"
 # random_classes = np.random.randint(0,num_classes,15)
