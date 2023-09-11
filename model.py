@@ -32,6 +32,7 @@ class CICAFFModel(torch.nn.Module):
         self.output = torch.nn.Sequential(
             torch.nn.Conv2d(256,number_of_classes, kernel_size=1) # NOTE da li ovako treba da konstruisem sloj? Da li treba da bude dublja mreza? Ili mozda decode1 treba da da output [batch_size, 313, h/4, w/4]? Nejasno...
         )
+
     def forward(self, x):
         #NOTE reassignment vrv ne treba zbog ReLU(True)? proveriti...
         en1_out = self.en1(x) 
@@ -48,7 +49,11 @@ class CICAFFModel(torch.nn.Module):
         decoder2_out = self.decode2(aff2_out,decoder3_out)
         decoder1_out = self.decode1(aff1_out,decoder2_out)
         color_category_probability = torch.nn.Sigmoid()(self.output(decoder1_out))
-        return image_category_probability, color_category_probability
+        if self.training:
+            return image_category_probability, color_category_probability
+        else:
+            return # vratiti recovered boju?
+        
 
 class EncoderBlock(torch.nn.Module):
     def __init__(self, in_channels: int, out_channels: int):

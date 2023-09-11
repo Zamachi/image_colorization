@@ -21,6 +21,7 @@ from huggingface_hub import notebook_login as notebook_login
 from torch.nn.functional import cross_entropy as cross_entropy
 from scipy.ndimage import gaussian_filter1d as gaussian_filter1d
 from warnings import warn as warn
+import matplotlib as plt
 # NOTE: moji moduli
 
 dataset_path='./dataset/'

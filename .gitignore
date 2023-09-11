@@ -6,3 +6,4 @@
 /dataset/l/
 .*\.png
 archive.zip
+__pycache__
